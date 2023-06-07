@@ -1,0 +1,191 @@
+table, th, td,col {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+table1, th1, td1 {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+</style>
+<style type="text/css">
+*{ 
+margin: 0;
+padding: 0;
+}
+table{
+border;1 px solid black;
+width:50px;
+height: 50px;
+}
+.black{
+width:50px;
+height:50px;
+border: 10px dotted pink;
+border-collapse: collapse;
+background-image:linear-gradient(green, orange);
+color:orange;}
+
+.white{
+width:50px;
+height:50px;
+background-image:linear-gradient(grey, violet);
+border: 10px dotted pink;
+border-collapse: collapse;
+color:blue;}
+
+
+.button {
+  border:;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.MatDes1{
+background-color:#800080;
+border:solid #800080;
+color:white;
+padding: 15px 32px;
+text-align: left;
+display: inline-block;
+font-size: 16px;
+}
+
+.MatDes2{
+border:solid #800080;
+color:#800080;
+}
+
+.SpotDes1{
+border-radius: 30px;
+background-color:#90EE90;
+color:white;
+border-color:#09c944;
+}
+
+.SpotDes2{
+border-radius: 30px;
+background-color:#09C944;
+color:white;
+border-color:#09c944;
+}
+
+.SpotDes3{
+border-radius: 30px;
+background-color:white;
+color:#09C944;
+border: solid #09C944;
+}
+
+.DiscDes1{
+color:white;
+background-color:#5664F1;
+border-color:#5664F1;
+}
+
+.DiscDes2{
+border-radius: 30px;
+color:white;
+background-color:#5664F1;
+border-color:#5664F1;
+}
+
+.DiscDes3{
+color:white;
+background-color:#A9A9A9;
+border-color:#A9A9A9;
+}
+
+.TailDes1{
+background-color:#2A9df4;
+color:white;
+border-radius:5px;
+border-color:#2A9df4;
+}
+
+.TailDes2{
+background-color:#2A9df4;
+color:white;
+border-radius:5px;
+border-color:#2A9df4;
+border-bottom:#03254c;
+}
+
+.TailDes3{
+background-color:#2A9df4;
+color:white;
+border-radius:30px;
+border-color:#2A9df4;
+}
+
+.TailDes4{
+background-color:white;
+color:#2A9df4;
+border-color:#2A9df4;}
+
+.TailDes5{
+background-color:white;
+color:black;
+border-color:grey;
+border-radius: 5px;
+}
+
+.FlDes1{
+background-color:blue;
+color:white;
+border-radius:5px;
+border-color:blue;
+}
+
+.FlDes2{
+background.color:white;
+color:grey;
+border-color:grey;
+border-radius:5px;
+}
+
+.AMZDes1{
+background-color:yellow;
+color:black;
+border-color:yellow;
+width:200px;
+border-radius:30px;
+}
+
+.AMZDes2{
+background-color:yellow;
+color:black;
+border-color:yellow;
+border-radius:30px;
+width:100px;
+
+.AMZDes3{
+background-color:white;
+color:black;
+width:100px;
+border-radius:30px;
+border-color:white;
+}
+
+.TechDes1{
+background-image:linear-gradient(to right, green, #90EE90);
+color:white;
+}
+
+.TechDes2{
+background-color:white;
+border-color:black;
+color:black;
+}
+
+
+
+
+
+
+
