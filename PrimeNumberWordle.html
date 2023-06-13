@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Prime Number Guessing Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .attempts {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .wrong-guesses {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prime Number Guessing Game</h1>
+  <p>Guess the prime number between 1 and 100:</p>
+  <div id="game">
+    <input type="number" id="guess" min="1" max="100" required>
+    <button onclick="checkGuess()">Submit</button>
+    <div class="result"></div>
+    <div class="attempts"></div>
+    <div class="wrong-guesses"></div>
+  </div>
+
+  <script>
+    // Generate a random prime number between 1 and 100
+    let randomPrime = generateRandomPrime();
+
+    function generateRandomPrime() {
+      let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+      return primes[Math.floor(Math.random() * primes.length)];
+    }
+
+    let remainingAttempts = 6;
+    let wrongGuesses = [];
+
+    function checkGuess() {
+      const guessInput = document.getElementById("guess");
+      const guess = parseInt(guessInput.value);
+      const resultDiv = document.querySelector(".result");
+      const attemptsDiv = document.querySelector(".attempts");
+      const wrongGuessesDiv = document.querySelector(".wrong-guesses");
+
+      if (isNaN(guess) || guess < 1 || guess > 100) {
+        resultDiv.textContent = "Please enter a valid number between 1 and 100.";
+        return;
+      }
+
+      remainingAttempts--;
+
+      if (guess === randomPrime) {
+        resultDiv.textContent = "Congratulations! You guessed the correct prime number.";
+        endGame();
+      } else if (remainingAttempts === 0) {
+        resultDiv.textContent = "Game Over! The correct prime number was " + randomPrime + ".";
+        endGame();
+      } else {
+        if (guess < randomPrime) {
+          resultDiv.textContent = "Wrong guess. Try a higher number!";
+        } else {
+          resultDiv.textContent = "Wrong guess. Try a lower number!";
+        }
+        attemptsDiv.textContent = "Attempts remaining: " + remainingAttempts;
+        wrongGuesses.push(guess);
+        wrongGuessesDiv.textContent = "Wrong guesses: " + wrongGuesses.join(", ");
+      }
+
+      guessInput.value = "";
+    }
+
+    function endGame() {
+      const gameDiv = document.getElementById("game");
+      const submitButton = gameDiv.querySelector("button");
+      const guessInput = gameDiv.querySelector("input");
+
+      guessInput.disabled = true;
+      submitButton.disabled = true;
+    }
+  </script>
+</body>
+</html>
