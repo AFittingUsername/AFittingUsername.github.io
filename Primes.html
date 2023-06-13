@@ -1,0 +1,48 @@
+<html>
+<title>Prime numbers</title>
+<meta charset="utf-8" />
+	<!-- Required CDN's -->
+	<link rel="stylesheet"
+		href=
+"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<script src=
+"https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+	</script>
+	<script src=
+"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js">
+	</script>
+<body>
+<script>
+function PrimeCalculation() {
+  /*var i = limit;*/
+  /*var j = limit2;*/
+  var limit = document.getElementById('limit').value;
+  var limit2 = document.getElementById('limit2').value;
+  var result = document.getElementById("result");
+  result.innerHTML = "Result: ";
+  for (var i = limit; i <= limit2; i++) {
+    var prime = true;
+    /* set j = 2 and NOT j = 1 */
+    for (var j = 2; j < i; j++) {
+      if (i % j == 0) {
+        prime = false;
+        break;
+      }
+    }
+
+    if (prime) {
+      result.insertAdjacentHTML('beforeend', i + ','); /* replaced <br/> with , to avoid page scroll */
+    }
+  }
+}
+</script>
+<h1>Prime numbers</h1>
+<p> This system displays all the numbers between your given range</p>
+<h2> WARNING</h2>
+<p>Due to how the system calculates these prime numbers 0 and 1 are counted</p>
+<h3>enter the lower range</h3><input type="text" id="limit" value="">
+<h3>enter the upper range</h3><input type="text" id="limit2" value="">
+<button onclick="PrimeCalculation()">Submit</button>
+<div id="result">Result:</div>
+</body>
+</html>
