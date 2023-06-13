@@ -22,6 +22,16 @@
       margin-top: 20px;
       font-weight: bold;
     }
+    .guess-feedback {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .trade-in {
+      margin-top: 20px;
+    }
+    .trade-in-button {
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -33,6 +43,11 @@
     <div class="result"></div>
     <div class="attempts"></div>
     <div class="wrong-guesses"></div>
+    <div class="guess-feedback"></div>
+    <div class="trade-in">
+      <button class="trade-in-button" onclick="tradeInGuessNumber()">Trade In Guess Number</button>
+      <button class="trade-in-button" onclick="tradeInReducedRange()">Trade In Reduced Range</button>
+    </div>
   </div>
 
   <script>
@@ -46,6 +61,16 @@
 
     let remainingAttempts = 6;
     let wrongGuesses = [];
+    let guessFeedback = [];
+
+    function isPrime(num) {
+      for (let i = 2, sqrt = Math.sqrt(num); i <= sqrt; i++) {
+        if (num % i === 0) {
+          return false;
+        }
+      }
+      return num > 1;
+    }
 
     function checkGuess() {
       const guessInput = document.getElementById("guess");
@@ -53,9 +78,15 @@
       const resultDiv = document.querySelector(".result");
       const attemptsDiv = document.querySelector(".attempts");
       const wrongGuessesDiv = document.querySelector(".wrong-guesses");
+      const guessFeedbackDiv = document.querySelector(".guess-feedback");
 
       if (isNaN(guess) || guess < 1 || guess > 100) {
         resultDiv.textContent = "Please enter a valid number between 1 and 100.";
+        return;
+      }
+
+      if (!isPrime(guess)) {
+        guessInput.value = "";
         return;
       }
 
@@ -70,24 +101,54 @@
       } else {
         if (guess < randomPrime) {
           resultDiv.textContent = "Wrong guess. Try a higher number!";
+          guessFeedback.push("Higher");
         } else {
           resultDiv.textContent = "Wrong guess. Try a lower number!";
+          guessFeedback.push("Lower");
         }
         attemptsDiv.textContent = "Attempts remaining: " + remainingAttempts;
         wrongGuesses.push(guess);
         wrongGuessesDiv.textContent = "Wrong guesses: " + wrongGuesses.join(", ");
+        guessFeedbackDiv.textContent = "Guess feedback: " + guessFeedback.join(", ");
       }
 
       guessInput.value = "";
+    }
+
+    function tradeInGuessNumber() {
+      const tradeInButton = document.querySelector(".trade-in-button");
+      tradeInButton.disabled = true;
+
+      const tradeInNumber = randomPrime.toString().charAt(Math.floor(Math.random() * randomPrime.toString().length));
+
+      const resultDiv = document.querySelector(".result");
+      resultDiv.textContent = "Trade In: The prime number contains the digit " + tradeInNumber + ".";
+    }
+
+    function tradeInReducedRange() {
+      const tradeInButton = document.querySelector(".trade-in-button");
+      tradeInButton.disabled = true;
+
+      const reducedRangeStart = Math.max(randomPrime - 10, 1);
+      const reducedRangeEnd = Math.min(randomPrime + 10, 100);
+
+      const resultDiv = document.querySelector(".result");
+      resultDiv.textContent = "Trade In: The prime number is between " + reducedRangeStart + " and " + reducedRangeEnd + ".";
+      
+      remainingAttempts--; // Subtract one guess for trading in a reduced range.
+      const attemptsDiv = document.querySelector(".attempts");
+      attemptsDiv.textContent = "Attempts remaining: " + remainingAttempts;
     }
 
     function endGame() {
       const gameDiv = document.getElementById("game");
       const submitButton = gameDiv.querySelector("button");
       const guessInput = gameDiv.querySelector("input");
+      const tradeInButton = gameDiv.querySelector(".trade-in-button");
 
       guessInput.disabled = true;
       submitButton.disabled = true;
+      tradeInButton.disabled = true;
     }
   </script>
 </body>
