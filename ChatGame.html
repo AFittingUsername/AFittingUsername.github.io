@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Whack-a-Mole Game</title>
+    <style>
+        body {
+            background-color: #f1f1f1;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-top: 40px;
+        }
+        
+        #game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hole {
+            width: 125px;
+            height: 125px;
+            background-color: #8B4513;
+            margin: 10px;
+            display: inline-block;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .mole {
+    width: 80px;
+    height: 80px;
+    background-image: url('mole.png');
+    background-size: cover;
+    margin: 10px auto;
+    transition: top 0.3s;
+    position: relative;
+}
+        
+        .score {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .timer {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Whack-a-Mole Game</h1>
+    <div id="game-container">
+        <div class="hole" onclick="whackMole(0)"><div id="mole0" class="mole"></div></div>
+        <div class="hole" onclick="whackMole(1)"><div id="mole1" class="mole"></div></div>
+        <div class="hole" onclick="whackMole(2)"><div id="mole2" class="mole"></div></div>
+        <div class="hole" onclick="whackMole(3)"><div id="mole3" class="mole"></div></div>
+        <div class="hole" onclick="whackMole(4)"><div id="mole4" class="mole"></div></div>
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="timer">Time: <span id="timer">30</span> seconds</div>
+        <div class="instructions">
+            <h2>Instructions:</h2>
+            <ul>
+                <li>Moles will randomly appear from the holes.</li>
+                <li>Your goal is to click on the moles as quickly as possible.</li>
+                <li>Clicking on a mole will increase your score.</li>
+                <li>You have 30 seconds to score as many points as you can.</li>
+                <li>Click on the moles to whack them and earn points.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        var holes = document.getElementsByClassName("hole");
+        var moles = document.getElementsByClassName("mole");
+        var scoreDisplay = document.getElementById("score");
+        var timerDisplay = document.getElementById("timer");
+        var score = 0;
+        var timeLeft = 30;
+        var moleTimer;
+        
+        // Start the game
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
+            hideMoles();
+            moleTimer = setInterval(showRandomMole, 1000);
+            setTimeout(endGame, timeLeft * 1000);
+        }
+        
+        // Show a random mole
+        function showRandomMole() {
+            hideMoles();
+            var randomIndex = Math.floor(Math.random() * moles.length);
+            moles[randomIndex].style.top = "0";
+        }
+        
+        // Hide all moles
+        function hideMoles() {
+            for (var i = 0; i < moles.length; i++) {
+                moles[i].style.top = "80px";
+            }
+        }
+        
+        // Whack a mole
+        function whackMole(index) {
+            if (moles[index].style.top === "0px") {
+                score++;
+                scoreDisplay.textContent = score;
+                moles[index].style.top = "80px";
+            }
+        }
+        
+        // End the game
+        function endGame() {
+            clearInterval(moleTimer);
+            alert("Time's up! Your final score is " + score);
+        }
+        
+        // Start the game on page load
+        startGame();
+    </script>
+</body>
+</html>
