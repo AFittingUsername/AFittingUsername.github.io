@@ -89,6 +89,7 @@
         var score = 0;
         var timeLeft = 30;
         var moleTimer;
+        var gameTimer;
         
         // Start the game
         function startGame() {
@@ -98,6 +99,7 @@
             timerDisplay.textContent = timeLeft;
             hideMoles();
             moleTimer = setInterval(showRandomMole, 1000);
+            gameTimer = setInterval(updateTimer, 1000);
             setTimeout(endGame, timeLeft * 1000);
         }
         
@@ -124,9 +126,16 @@
             }
         }
         
+        // Update the timer
+        function updateTimer() {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+        }
+        
         // End the game
         function endGame() {
             clearInterval(moleTimer);
+            clearInterval(gameTimer);
             alert("Time's up! Your final score is " + score);
         }
         
