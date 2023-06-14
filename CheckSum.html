@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checksum Algorithm</title>
+  <script>
+    function calculateChecksum() {
+      var input = document.getElementById('input').value;
+      var output = document.getElementById('output');
+      
+      while (input.length > 1) {
+        var sum = 0;
+        var equation = "";
+        
+        for (var i = 0; i < input.length; i++) {
+          var num = parseInt(input.charAt(i));
+          
+          if (!isNaN(num)) {
+            sum += num;
+            equation += num + " + ";
+          }
+        }
+        
+        equation = equation.slice(0, -3); // Remove the trailing " + "
+        equation += " = " + sum;
+        
+        output.innerHTML += equation + "<br>";
+        
+        input = sum.toString();
+      }
+      
+      document.getElementById('checksum').textContent = input;
+    }
+  </script>
+</head>
+<body>
+  <h1>Checksum Algorithm</h1>
+  <label for="input">Enter numbers:</label>
+  <input type="text" id="input">
+  <button onclick="calculateChecksum()">Calculate Checksum</button>
+  <p id="output">Checksum Calculation:</p>
+  <p>Checksum: <span id="checksum"></span></p>
+</body>
