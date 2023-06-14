@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hexadecimal Checksum Algorithm</title>
+  <script>
+    function calculateChecksum() {
+      var input = document.getElementById('input').value;
+      
+      while (input.length > 1) {
+        var sum = 0;
+        var equation = "";
+        
+        for (var i = 0; i < input.length; i++) {
+          var char = input.charAt(i);
+          var hexValue = parseInt(char, 16);
+          
+          if (!isNaN(hexValue)) {
+            sum += hexValue;
+            equation += char + " + ";
+          }
+        }
+        
+        equation = equation.slice(0, -3); // Remove the trailing " + "
+        equation += " = " + sum.toString(16).toUpperCase();
+        
+        document.getElementById('output').innerHTML += equation + "<br>";
+        
+        input = sum.toString(16);
+      }
+      
+      document.getElementById('checksum').textContent = input.toUpperCase();
+    }
+  </script>
+</head>
+<body>
+  <h1>Hexadecimal Checksum Algorithm</h1>
+  <label for="input">Enter hexadecimal values:</label>
+  <input type="text" id="input">
+  <button onclick="calculateChecksum()">Calculate Checksum</button>
+  <p id="output">Checksum Calculation:</p>
+  <p>Checksum: <span id="checksum"></span></p>
+</body>
+</html>
