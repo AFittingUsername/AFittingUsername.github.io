@@ -6,7 +6,7 @@
     function calculateChecksum() {
       var input = document.getElementById('input').value;
       
-      while (input.length > 1) {
+      while (input.length > 1 || (input.length === 2 && parseInt(input, 16) > 15)) {
         var sum = 0;
         var equation = "";
         
@@ -17,15 +17,26 @@
           if (!isNaN(hexValue)) {
             sum += hexValue;
             equation += char + " + ";
+          } else {
+            var decimalValue = char.charCodeAt(0);
+            sum += decimalValue;
+            equation += decimalValue + " + ";
           }
         }
         
         equation = equation.slice(0, -3); // Remove the trailing " + "
         equation += " = " + sum.toString(16).toUpperCase();
         
+        var decimalSum = parseInt(equation.split(" = ")[1], 16).toString();
+        equation = equation.replace(sum.toString(16).toUpperCase(), decimalSum);
+        
         document.getElementById('output').innerHTML += equation + "<br>";
         
         input = sum.toString(16);
+        
+        if (input.length > 1) {
+          input = parseInt(input, 16).toString();
+        }
       }
       
       document.getElementById('checksum').textContent = input.toUpperCase();
