@@ -106,4 +106,22 @@
     document.getElementById("messageForm").addEventListener("submit", function(event) {
       event.preventDefault(); // Prevent default form submission
 
-      var nameInput = document.getElementById
+      var nameInput = document.getElementById("nameInput");
+      var messageInput = document.getElementById("messageInput");
+
+      var name = nameInput.value.trim(); // Trim leading/trailing whitespace
+      var message = messageInput.value.trim(); // Trim leading/trailing whitespace
+
+      if (name !== "" && message !== "") {
+        var timestamp = getCurrentDateTime();
+        var formattedMessage = name + " - " + timestamp + " - " + message;
+        messages.push(formattedMessage);
+        displayMessages();
+        nameInput.value = "";
+        messageInput.value = "";
+        storeMessages();
+      }
+    });
+  </script>
+</body>
+</html>
