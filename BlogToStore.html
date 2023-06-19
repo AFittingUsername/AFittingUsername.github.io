@@ -3,47 +3,8 @@
 <head>
   <title>Blog Solution</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-
-    form {
-      margin-bottom: 20px;
-    }
-
-    input[type="text"],
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: vertical;
-    }
-
-    button[type="submit"] {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button[type="submit"]:hover {
-      background-color: #45a049;
-    }
-
-    #messageContainer {
-      margin-top: 20px;
-    }
-
-    #messageContainer div {
-      background-color: #f9f9f9;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-    }
+    /* CSS styling */
+    /* ... */
   </style>
 </head>
 <body>
@@ -102,6 +63,55 @@
       return year + "-" + month + "-" + day + " " + hours + "-" + minutes + "-" + seconds;
     }
 
+    // Function to retrieve and display the contents of text documents
+    function retrieveTextDocuments() {
+      fetchTextDocuments()
+        .then(function(textDocuments) {
+          Promise.all(textDocuments.map(fetchTextDocumentContent))
+            .then(function(contents) {
+              contents.forEach(function(content) {
+                messages.push(content);
+              });
+              displayMessages();
+            })
+            .catch(function(error) {
+              console.log("Error retrieving text document contents:", error);
+            });
+        })
+        .catch(function(error) {
+          console.log("Error retrieving text documents:", error);
+        });
+    }
+
+    // Function to fetch the list of text documents matching the pattern
+    function fetchTextDocuments() {
+      return fetch("./") // Assuming the text documents are in the same directory as the HTML file
+        .then(function(response) {
+          return response.text();
+        })
+        .then(function(html) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(html, "text/html");
+          var links = doc.getElementsByTagName("a");
+          var textDocuments = Array.from(links)
+            .map(function(link) {
+              return link.getAttribute("href");
+            })
+            .filter(function(href) {
+              return href.startsWith("Blog messages") && href.endsWith(".txt");
+            });
+          return textDocuments;
+        });
+    }
+
+    // Function to fetch the content of a text document
+    function fetchTextDocumentContent(textDocument) {
+      return fetch(textDocument)
+        .then(function(response) {
+          return response.text();
+        });
+    }
+
     // Event listener for form submission
     document.getElementById("messageForm").addEventListener("submit", function(event) {
       event.preventDefault(); // Prevent default form submission
@@ -122,6 +132,9 @@
         storeMessages();
       }
     });
+
+    // Call the function to retrieve and display the text documents on page load
+    retrieveTextDocuments();
   </script>
 </body>
 </html>
