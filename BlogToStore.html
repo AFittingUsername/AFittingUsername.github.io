@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blog Solution</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    #messageContainer {
+      margin-top: 20px;
+    }
+
+    #messageContainer div {
+      background-color: #f9f9f9;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <form id="messageForm">
+    <input type="text" id="nameInput" placeholder="Your Name">
+    <br />
+    <textarea id="messageInput" rows="4" placeholder="Enter your message"></textarea>
+    <br />
+    <button type="submit">Post</button>
+  </form>
+  <div id="messageContainer"></div>
+
+  <script>
+    // Array to store posted messages
+    var messages = [];
+
+    // Function to display all messages
+    function displayMessages() {
+      var messageContainer = document.getElementById("messageContainer");
+      messageContainer.innerHTML = ""; // Clear the container before displaying messages
+
+      messages.forEach(function(message) {
+        var messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        messageContainer.appendChild(messageElement);
+      });
+    }
+
+    // Function to store messages in a text file
+    function storeMessages() {
+      var textFileContent = messages.join("\n");
+
+      // Create a blob with the text content
+      var blob = new Blob([textFileContent], { type: "text/plain" });
+
+      // Generate the file name with the current date and time
+      var fileName = "Blog messages - " + getCurrentDateTime() + ".txt";
+
+      // Create a temporary anchor element to download the file
+      var downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(blob);
+      downloadLink.download = fileName;
+      downloadLink.click();
+    }
+
+    // Function to get the current date and time in a specific format
+    function getCurrentDateTime() {
+      var currentDateTime = new Date();
+      var year = currentDateTime.getFullYear();
+      var month = (currentDateTime.getMonth() + 1).toString().padStart(2, "0");
+      var day = currentDateTime.getDate().toString().padStart(2, "0");
+      var hours = currentDateTime.getHours().toString().padStart(2, "0");
+      var minutes = currentDateTime.getMinutes().toString().padStart(2, "0");
+      var seconds = currentDateTime.getSeconds().toString().padStart(2, "0");
+
+      return year + "-" + month + "-" + day + " " + hours + "-" + minutes + "-" + seconds;
+    }
+
+    // Event listener for form submission
+    document.getElementById("messageForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent default form submission
+
+      var nameInput = document.getElementById
