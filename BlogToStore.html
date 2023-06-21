@@ -1,141 +1,140 @@
-<-- Need to make so that when the user saves messages it updates into same directory-->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Blog Solution</title>
+  <title>Message Board</title>
   <style>
-    /* CSS styling */
-    /* ... */
+    table {
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+    }
   </style>
 </head>
 <body>
+  <h1>Message Board</h1>
   <form id="messageForm">
-    <input type="text" id="nameInput" placeholder="Your Name">
-    <br />
-    <textarea id="messageInput" rows="4" placeholder="Enter your message"></textarea>
-    <br />
+    <label for="nameInput">Your Name</label><br>
+    <input type="text" id="nameInput"><br><br>
+    <label for="messageInput">Enter your message</label><br>
+    <textarea id="messageInput"></textarea><br><br>
+    <label for="customDateTimeInput">Custom Date and Time (Optional):</label><br>
+    <input type="text" id="customDateTimeInput" placeholder="dd/mm/yyyy --:--"><br><br>
     <button type="submit">Post</button>
   </form>
-  <div id="messageContainer"></div>
+
+  <h2>Filter Messages</h2>
+  <label for="nameFilterInput">Filter by Name:</label>
+  <input type="text" id="nameFilterInput"><br><br>
+  <button type="button" id="filterButton">Filter</button>
+
+  <h2>All Messages</h2>
+  <table id="messageTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date and Time</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="messageBody">
+    </tbody>
+  </table>
 
   <script>
-    // Array to store posted messages
-    var messages = [];
+    var allMessages = [];
 
-    // Function to display all messages
-    function displayMessages() {
-      var messageContainer = document.getElementById("messageContainer");
-      messageContainer.innerHTML = ""; // Clear the container before displaying messages
+    // Function to display messages
+    function displayMessages(messages) {
+      var tableBody = document.getElementById("messageBody");
+      tableBody.innerHTML = "";
 
       messages.forEach(function(message) {
-        var messageElement = document.createElement("div");
-        messageElement.textContent = message;
-        messageContainer.appendChild(messageElement);
+        var row = document.createElement("tr");
+        var nameCell = document.createElement("td");
+        nameCell.textContent = message.name;
+        row.appendChild(nameCell);
+
+        var timestampCell = document.createElement("td");
+        timestampCell.textContent = message.timestamp;
+        row.appendChild(timestampCell);
+
+        var messageCell = document.createElement("td");
+        messageCell.textContent = message.message;
+        row.appendChild(messageCell);
+
+        tableBody.appendChild(row);
       });
     }
 
-    // Function to store messages in a text file
-    function storeMessages() {
-      var textFileContent = messages.join("\n");
-
-      // Create a blob with the text content
-      var blob = new Blob([textFileContent], { type: "text/plain" });
-
-      // Generate the file name with the current date and time
-      var fileName = "Blog messages - " + getCurrentDateTime() + ".txt";
-
-      // Create a temporary anchor element to download the file
-      var downloadLink = document.createElement("a");
-      downloadLink.href = URL.createObjectURL(blob);
-      downloadLink.download = fileName;
-      downloadLink.click();
+    // Function to save messages to local storage
+    function saveMessages() {
+      localStorage.setItem("messages", JSON.stringify(allMessages));
     }
 
-    // Function to get the current date and time in a specific format
-    function getCurrentDateTime() {
-      var currentDateTime = new Date();
-      var year = currentDateTime.getFullYear();
-      var month = (currentDateTime.getMonth() + 1).toString().padStart(2, "0");
-      var day = currentDateTime.getDate().toString().padStart(2, "0");
-      var hours = currentDateTime.getHours().toString().padStart(2, "0");
-      var minutes = currentDateTime.getMinutes().toString().padStart(2, "0");
-      var seconds = currentDateTime.getSeconds().toString().padStart(2, "0");
-
-      return year + "-" + month + "-" + day + " " + hours + "-" + minutes + "-" + seconds;
-    }
-
-    // Function to retrieve and display the contents of text documents
-    function retrieveTextDocuments() {
-      fetchTextDocuments()
-        .then(function(textDocuments) {
-          Promise.all(textDocuments.map(fetchTextDocumentContent))
-            .then(function(contents) {
-              contents.forEach(function(content) {
-                messages.push(content);
-              });
-              displayMessages();
-            })
-            .catch(function(error) {
-              console.log("Error retrieving text document contents:", error);
-            });
-        })
-        .catch(function(error) {
-          console.log("Error retrieving text documents:", error);
-        });
-    }
-
-    // Function to fetch the list of text documents matching the pattern
-    function fetchTextDocuments() {
-      return fetch("./") // Assuming the text documents are in the same directory as the HTML file
-        .then(function(response) {
-          return response.text();
-        })
-        .then(function(html) {
-          var parser = new DOMParser();
-          var doc = parser.parseFromString(html, "text/html");
-          var links = doc.getElementsByTagName("a");
-          var textDocuments = Array.from(links)
-            .map(function(link) {
-              return link.getAttribute("href");
-            })
-            .filter(function(href) {
-              return href.startsWith("Blog messages") && href.endsWith(".txt");
-            });
-          return textDocuments;
-        });
-    }
-
-    // Function to fetch the content of a text document
-    function fetchTextDocumentContent(textDocument) {
-      return fetch(textDocument)
-        .then(function(response) {
-          return response.text();
-        });
-    }
-
-    // Event listener for form submission
-    document.getElementById("messageForm").addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent default form submission
-
-      var nameInput = document.getElementById("nameInput");
-      var messageInput = document.getElementById("messageInput");
-
-      var name = nameInput.value.trim(); // Trim leading/trailing whitespace
-      var message = messageInput.value.trim(); // Trim leading/trailing whitespace
-
-      if (name !== "" && message !== "") {
-        var timestamp = getCurrentDateTime();
-        var formattedMessage = name + " - " + timestamp + " - " + message;
-        messages.push(formattedMessage);
-        displayMessages();
-        nameInput.value = "";
-        messageInput.value = "";
-        storeMessages();
+    // Function to load messages from local storage
+    function loadMessages() {
+      var savedMessages = localStorage.getItem("messages");
+      if (savedMessages) {
+        allMessages = JSON.parse(savedMessages);
+        displayMessages(allMessages);
       }
+    }
+
+    // Function to handle form submission
+    document.getElementById("messageForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      var name = trimString(document.getElementById("nameInput").value);
+      var message = document.getElementById("messageInput").value;
+      var customDateTime = document.getElementById("customDateTimeInput").value.trim();
+
+      var timestamp;
+      if (customDateTime) {
+        var dateTimeParts = customDateTime.split(" ");
+        var dateParts = dateTimeParts[0].split("/");
+        var timeParts = dateTimeParts[1].split(":");
+        timestamp = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]).toLocaleString();
+      } else {
+        timestamp = new Date().toLocaleString();
+      }
+
+      var newMessage = {
+        name: name,
+        timestamp: timestamp,
+        message: message
+      };
+
+      allMessages.push(newMessage);
+      displayMessages(allMessages);
+      saveMessages();
+
+      document.getElementById("nameInput").value = "";
+      document.getElementById("messageInput").value = "";
+      document.getElementById("customDateTimeInput").value = "";
     });
 
-    // Call the function to retrieve and display the text documents on page load
-    retrieveTextDocuments();
+    // Function to handle filter button click
+    document.getElementById("filterButton").addEventListener("click", function() {
+      var nameFilterValue = trimString(document.getElementById("nameFilterInput").value).toLowerCase();
+
+      var filteredMessages = allMessages.filter(function(message) {
+        var name = trimString(message.name).toLowerCase();
+        return name.includes(nameFilterValue);
+      });
+
+      displayMessages(filteredMessages);
+    });
+
+    // Function to remove leading and trailing whitespace
+    function trimString(str) {
+      return str.replace(/^\s+|\s+$/g, "");
+    }
+
+    // Load messages from local storage on page load
+    loadMessages();
   </script>
 </body>
 </html>
