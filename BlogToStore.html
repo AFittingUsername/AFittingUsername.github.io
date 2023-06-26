@@ -1,40 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Message Board</title>
   <style>
+    /* Styles for the table and form */
     table {
+      width: 100%;
       border-collapse: collapse;
     }
 
     th, td {
-      border: 1px solid black;
       padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    /* Styles for the message image */
+    .message-img {
+      max-width: 100px;
+      max-height: 100px;
     }
   </style>
 </head>
 <body>
   <h1>Message Board</h1>
+
   <form id="messageForm">
-    <label for="nameInput">Your Name</label><br>
-    <input type="text" id="nameInput"><br><br>
-    <label for="messageInput">Enter your message</label><br>
-    <textarea id="messageInput"></textarea><br><br>
-    <label for="replyAuthorInput">Reply Author</label><br>
-    <input type="text" id="replyAuthorInput"><br><br>
-    <label for="replyMessageInput">Reply Message</label><br>
-    <textarea id="replyMessageInput"></textarea><br><br>
-    <label for="customDateTimeInput">Custom Date and Time (Optional):</label><br>
-    <input type="datetime-local" id="customDateTimeInput"><br><br>
-    <button type="submit">Post</button>
+    <label for="nameInput">Name:</label>
+    <input type="text" id="nameInput" required>
+
+    <label for="messageInput">Message:</label>
+    <textarea id="messageInput" required></textarea>
+
+    <label for="replyAuthorInput">Reply Author:</label>
+    <input type="text" id="replyAuthorInput">
+
+    <label for="replyMessageInput">Reply Message:</label>
+    <textarea id="replyMessageInput"></textarea>
+
+    <label for="pictureInput">Picture Link:</label>
+    <input type="text" id="pictureInput">
+
+    <button type="submit">Submit</button>
   </form>
 
-  <h2>Filter Messages</h2>
   <label for="nameFilterInput">Filter by Name:</label>
-  <input type="text" id="nameFilterInput"><br><br>
-  <button type="button" id="filterButton">Filter</button>
+  <input type="text" id="nameFilterInput">
+  <button id="filterButton">Filter</button>
 
-  <h2>All Messages</h2>
   <table id="messageTable">
     <thead>
       <tr>
@@ -44,208 +64,204 @@
         <th>Message</th>
         <th>Reply Author</th>
         <th>Reply Message</th>
+        <th>Picture</th>
         <th>Action</th>
       </tr>
     </thead>
-    <tbody id="messageBody">
-    </tbody>
+    <tbody id="messageTableBody"></tbody>
   </table>
 
-  <button type="button" id="downloadButton">Download as CSV</button>
+  <button id="downloadButton">Download as CSV</button>
 
   <script>
-    var allMessages = [];
+    // Retrieve messages from local storage or use an empty array if none exists
+    var allMessages = JSON.parse(localStorage.getItem("messages")) || [];
 
-    // Function to display messages
+    // Function to display the messages in the table
     function displayMessages(messages) {
-      var tableBody = document.getElementById("messageBody");
+      var tableBody = document.getElementById("messageTableBody");
       tableBody.innerHTML = "";
 
-      if (messages && messages.length > 0) {
-        messages.forEach(function(message, index) {
-          var row = document.createElement("tr");
+      messages.forEach(function(message, index) {
+        var row = document.createElement("tr");
 
-          var nameCell = document.createElement("td");
-          var nameInput = document.createElement("input");
-          nameInput.type = "text";
-          nameInput.value = message.name;
-          nameCell.appendChild(nameInput);
-          row.appendChild(nameCell);
+        var nameCell = document.createElement("td");
+        nameCell.textContent = message.name;
+        row.appendChild(nameCell);
 
-          var timestampCell = document.createElement("td");
-          var timestamp = new Date(message.timestamp);
-          timestampCell.textContent = timestamp.toLocaleDateString();
-          row.appendChild(timestampCell);
+        var timestamp = new Date(message.timestamp);
+        var dateCell = document.createElement("td");
+        dateCell.textContent = timestamp.toLocaleDateString();
+        row.appendChild(dateCell);
 
-          var timeCell = document.createElement("td");
-          var time = timestamp.toLocaleTimeString();
-          timeCell.textContent = time;
-          row.appendChild(timeCell);
+        var timeCell = document.createElement("td");
+        timeCell.textContent = timestamp.toLocaleTimeString();
+        row.appendChild(timeCell);
 
-          var messageCell = document.createElement("td");
-          var messageInput = document.createElement("input");
-          messageInput.type = "text";
-          messageInput.value = message.message;
-          messageCell.appendChild(messageInput);
-          row.appendChild(messageCell);
+        var messageCell = document.createElement("td");
+        messageCell.textContent = message.message;
+        row.appendChild(messageCell);
 
-          var replyAuthorCell = document.createElement("td");
-          var replyAuthorInput = document.createElement("input");
-          replyAuthorInput.type = "text";
-          replyAuthorInput.value = message.replyAuthor || "";
-          replyAuthorCell.appendChild(replyAuthorInput);
-          row.appendChild(replyAuthorCell);
+        var replyAuthorCell = document.createElement("td");
+        replyAuthorCell.textContent = message.replyAuthor;
+        row.appendChild(replyAuthorCell);
 
-          var replyMessageCell = document.createElement("td");
-          var replyMessageInput = document.createElement("input");
-          replyMessageInput.type = "text";
-          replyMessageInput.value = message.replyMessage || "";
-          replyMessageCell.appendChild(replyMessageInput);
-          row.appendChild(replyMessageCell);
+        var replyMessageCell = document.createElement("td");
+        replyMessageCell.textContent = message.replyMessage;
+        row.appendChild(replyMessageCell);
 
-          var actionCell = document.createElement("td");
-          var editButton = document.createElement("button");
-          editButton.textContent = "Edit";
-          editButton.addEventListener("click", function() {
-            var newName = nameInput.value;
-            var newMessage = messageInput.value;
-            var newReplyAuthor = replyAuthorInput.value;
-            var newReplyMessage = replyMessageInput.value;
-            editMessage(index, newName, newMessage, newReplyAuthor, newReplyMessage);
-          });
-          actionCell.appendChild(editButton);
-          row.appendChild(actionCell);
+        var pictureCell = document.createElement("td");
+        if (message.picture) {
+          var pictureImg = document.createElement("img");
+          pictureImg.classList.add("message-img");
+          pictureImg.src = message.picture;
+          pictureCell.appendChild(pictureImg);
+        }
+        row.appendChild(pictureCell);
 
-          tableBody.appendChild(row);
+        var actionCell = document.createElement("td");
+        var editLink = document.createElement("a");
+        editLink.href = "#";
+        editLink.textContent = "Edit";
+        editLink.addEventListener("click", function(event) {
+          event.preventDefault();
+          editMessage(index);
         });
-      }
-    }
+        actionCell.appendChild(editLink);
+        row.appendChild(actionCell);
 
-    // Function to save messages to local storage
-    function saveMessages() {
-      localStorage.setItem("messages", JSON.stringify(allMessages));
-    }
-
-    // Function to load messages from local storage
-    function loadMessages() {
-      var savedMessages = localStorage.getItem("messages");
-      if (savedMessages) {
-        allMessages = JSON.parse(savedMessages);
-
-        // Sort messages by timestamp in ascending order (oldest to youngest)
-        allMessages.sort(function(a, b) {
-          return new Date(a.timestamp) - new Date(b.timestamp);
-        });
-
-        displayMessages(allMessages);
-      }
+        tableBody.appendChild(row);
+      });
     }
 
     // Function to add a new message
-    function addMessage(name, message, replyAuthor, replyMessage) {
-      var customDateTimeInput = document.getElementById("customDateTimeInput");
-      var timestamp = new Date().toISOString();
-      
-      if (customDateTimeInput.value) {
-        var customTimestamp = new Date(customDateTimeInput.value).getTime();
-        
-        if (!isNaN(customTimestamp) && customTimestamp >= Date.now() && customTimestamp <= new Date(2023, 5, 20).getTime()) {
-          timestamp = new Date(customTimestamp).toISOString();
-        } else {
-          timestamp = generateRandomTimestamp().toISOString();
-        }
-      }
-      
+    function addMessage(name, message, replyAuthor, replyMessage, picture) {
       var newMessage = {
         name: name,
-        timestamp: timestamp,
         message: message,
-        replyAuthor: replyAuthor || "",
-        replyMessage: replyMessage || ""
+        replyAuthor: replyAuthor,
+        replyMessage: replyMessage,
+        picture: picture,
+        timestamp: Date.now()
       };
 
       allMessages.push(newMessage);
+      localStorage.setItem("messages", JSON.stringify(allMessages));
       displayMessages(allMessages);
-      saveMessages();
-    }
-
-    // Function to generate a random timestamp within the range of today and June 20th, 2023
-    function generateRandomTimestamp() {
-      var today = new Date();
-      var june20th2023 = new Date(2023, 5, 20);
-      var randomTimestamp = new Date(today.getTime() + Math.random() * (june20th2023.getTime() - today.getTime()));
-      return randomTimestamp;
     }
 
     // Function to edit an existing message
-    function editMessage(index, newName, newMessage, newReplyAuthor, newReplyMessage) {
-      if (index >= 0 && index < allMessages.length) {
-        allMessages[index].name = newName;
-        allMessages[index].message = newMessage;
-        allMessages[index].replyAuthor = newReplyAuthor;
-        allMessages[index].replyMessage = newReplyMessage;
-        displayMessages(allMessages);
-        saveMessages();
-      }
-    }
+    function editMessage(index) {
+      var message = allMessages[index];
+      if (!message) return;
 
-    // Function to handle form submission
-    document.getElementById("messageForm").addEventListener("submit", function(event) {
-      event.preventDefault();
       var nameInput = document.getElementById("nameInput");
       var messageInput = document.getElementById("messageInput");
       var replyAuthorInput = document.getElementById("replyAuthorInput");
       var replyMessageInput = document.getElementById("replyMessageInput");
+      var pictureInput = document.getElementById("pictureInput");
 
-      var name = nameInput.value;
-      var message = messageInput.value;
-      var replyAuthor = replyAuthorInput.value;
-      var replyMessage = replyMessageInput.value;
+      nameInput.value = message.name;
+      messageInput.value = message.message;
+      replyAuthorInput.value = message.replyAuthor;
+      replyMessageInput.value = message.replyMessage;
+      pictureInput.value = message.picture;
 
-      if (name && message) {
-        addMessage(name, message, replyAuthor, replyMessage);
+      var messageForm = document.getElementById("messageForm");
+      messageForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        var updatedName = nameInput.value.trim();
+        var updatedMessage = messageInput.value.trim();
+        var updatedReplyAuthor = replyAuthorInput.value.trim();
+        var updatedReplyMessage = replyMessageInput.value.trim();
+        var updatedPicture = pictureInput.value.trim();
+
+        if (updatedName === "" || updatedMessage === "") {
+          alert("Please enter your name and message.");
+          return;
+        }
+
+        message.name = updatedName;
+        message.message = updatedMessage;
+        message.replyAuthor = updatedReplyAuthor;
+        message.replyMessage = updatedReplyMessage;
+        message.picture = updatedPicture;
+        message.timestamp = Date.now();
+
+        localStorage.setItem("messages", JSON.stringify(allMessages));
+        displayMessages(allMessages);
+
         nameInput.value = "";
         messageInput.value = "";
         replyAuthorInput.value = "";
         replyMessageInput.value = "";
-      } else {
+        pictureInput.value = "";
+        messageForm.removeEventListener("submit", arguments.callee);
+      });
+    }
+
+    // Event listener for the form submission
+    var messageForm = document.getElementById("messageForm");
+    messageForm.addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      var nameInput = document.getElementById("nameInput");
+      var messageInput = document.getElementById("messageInput");
+      var replyAuthorInput = document.getElementById("replyAuthorInput");
+      var replyMessageInput = document.getElementById("replyMessageInput");
+      var pictureInput = document.getElementById("pictureInput");
+
+      var name = nameInput.value.trim();
+      var message = messageInput.value.trim();
+      var replyAuthor = replyAuthorInput.value.trim();
+      var replyMessage = replyMessageInput.value.trim();
+      var picture = pictureInput.value.trim();
+
+      if (name === "" || message === "") {
         alert("Please enter your name and message.");
+        return;
       }
+
+      addMessage(name, message, replyAuthor, replyMessage, picture);
+
+      nameInput.value = "";
+      messageInput.value = "";
+      replyAuthorInput.value = "";
+      replyMessageInput.value = "";
+      pictureInput.value = "";
     });
 
-    // Function to filter messages by name
-    document.getElementById("filterButton").addEventListener("click", function() {
+    // Event listener for the filter button
+    var filterButton = document.getElementById("filterButton");
+    filterButton.addEventListener("click", function() {
       var nameFilterInput = document.getElementById("nameFilterInput");
-      var filterValue = nameFilterInput.value.trim().toLowerCase();
-      var filteredMessages = [];
+      var nameFilter = nameFilterInput.value.trim().toLowerCase();
 
-      if (filterValue) {
-        filteredMessages = allMessages.filter(function(message) {
-          return message.name.toLowerCase().includes(filterValue);
-        });
-      } else {
-        filteredMessages = allMessages;
-      }
+      var filteredMessages = allMessages.filter(function(message) {
+        return message.name.toLowerCase().includes(nameFilter);
+      });
 
       displayMessages(filteredMessages);
     });
 
-    // Function to download messages as CSV
-    document.getElementById("downloadButton").addEventListener("click", function() {
+    // Event listener for the download button
+    var downloadButton = document.getElementById("downloadButton");
+    downloadButton.addEventListener("click", function() {
       var csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Name,Date,Time,Message,Reply Author,Reply Message,Picture\n";
 
-      if (allMessages.length > 0) {
-        var headers = Object.keys(allMessages[0]);
-        csvContent += headers.join(",") + "\n";
-
-        allMessages.forEach(function(message) {
-          var values = Object.values(message);
-          var row = values.map(function(value) {
-            return typeof value === "string" ? `"${value}"` : value;
-          });
-          csvContent += row.join(",") + "\n";
-        });
-      }
+      allMessages.forEach(function(message) {
+        csvContent += [
+          message.name,
+          new Date(message.timestamp).toLocaleDateString(),
+          new Date(message.timestamp).toLocaleTimeString(),
+          message.message,
+          message.replyAuthor,
+          message.replyMessage,
+          message.picture
+        ].join(",") + "\n";
+      });
 
       var encodedUri = encodeURI(csvContent);
       var link = document.createElement("a");
@@ -255,8 +271,8 @@
       link.click();
     });
 
-    // Load messages on page load
-    loadMessages();
+    // Display all messages initially
+    displayMessages(allMessages);
   </script>
 </body>
 </html>
