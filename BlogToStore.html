@@ -1,31 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Message Board</title>
   <style>
-    /* Styles for the table and form */
-    table {
+    .message-table {
       width: 100%;
       border-collapse: collapse;
     }
 
-    th, td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
+    .message-table th,
+    .message-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
     }
 
-    th {
-      background-color: #f2f2f2;
-    }
-
-    form {
-      margin-bottom: 20px;
-    }
-
-    /* Styles for the message image */
     .message-img {
       max-width: 100px;
       max-height: 100px;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .form-label {
+      width: 120px;
+      text-align: right;
+      margin-right: 10px;
+      font-weight: bold;
+    }
+
+    .form-input {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .form-textarea {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .form-button {
+      margin-left: 130px;
     }
   </style>
 </head>
@@ -33,29 +55,47 @@
   <h1>Message Board</h1>
 
   <form id="messageForm">
-    <label for="nameInput">Name:</label>
-    <input type="text" id="nameInput" required>
+    <div class="form-row">
+      <label class="form-label" for="nameInput">Name:</label>
+      <input class="form-input" type="text" id="nameInput" required>
+    </div>
 
-    <label for="messageInput">Message:</label>
-    <textarea id="messageInput" required></textarea>
+    <div class="form-row">
+      <label class="form-label" for="messageInput">Message:</label>
+      <textarea class="form-textarea" id="messageInput" rows="4" required></textarea>
+    </div>
 
-    <label for="replyAuthorInput">Reply Author:</label>
-    <input type="text" id="replyAuthorInput">
+    <div class="form-row">
+      <label class="form-label" for="replyAuthorInput">Reply Author:</label>
+      <input class="form-input" type="text" id="replyAuthorInput">
+    </div>
 
-    <label for="replyMessageInput">Reply Message:</label>
-    <textarea id="replyMessageInput"></textarea>
+    <div class="form-row">
+      <label class="form-label" for="replyMessageInput">Reply Message:</label>
+      <textarea class="form-textarea" id="replyMessageInput" rows="4"></textarea>
+    </div>
 
-    <label for="pictureInput">Picture Link:</label>
-    <input type="text" id="pictureInput">
+    <div class="form-row">
+      <label class="form-label" for="pictureInput">Picture:</label>
+      <input class="form-input" type="text" id="pictureInput">
+    </div>
 
-    <button type="submit">Submit</button>
+    <div class="form-row form-button">
+      <button type="submit">Add Message</button>
+    </div>
   </form>
+
+  <br>
 
   <label for="nameFilterInput">Filter by Name:</label>
   <input type="text" id="nameFilterInput">
-  <button id="filterButton">Filter</button>
 
-  <table id="messageTable">
+  <button id="filterButton">Filter</button>
+  <button id="refreshButton">Refresh</button>
+
+  <br><br>
+
+  <table class="message-table">
     <thead>
       <tr>
         <th>Name</th>
@@ -71,13 +111,14 @@
     <tbody id="messageTableBody"></tbody>
   </table>
 
-  <button id="downloadButton">Download as CSV</button>
+  <br>
+
+  <button id="downloadButton">Download CSV</button>
 
   <script>
-    // Retrieve messages from local storage or use an empty array if none exists
-    var allMessages = JSON.parse(localStorage.getItem("messages")) || [];
+    var allMessages = [];
 
-    // Function to display the messages in the table
+    // Function to display messages
     function displayMessages(messages) {
       var tableBody = document.getElementById("messageTableBody");
       tableBody.innerHTML = "";
@@ -89,13 +130,12 @@
         nameCell.textContent = message.name;
         row.appendChild(nameCell);
 
-        var timestamp = new Date(message.timestamp);
         var dateCell = document.createElement("td");
-        dateCell.textContent = timestamp.toLocaleDateString();
+        dateCell.textContent = new Date(message.timestamp).toLocaleDateString();
         row.appendChild(dateCell);
 
         var timeCell = document.createElement("td");
-        timeCell.textContent = timestamp.toLocaleTimeString();
+        timeCell.textContent = new Date(message.timestamp).toLocaleTimeString();
         row.appendChild(timeCell);
 
         var messageCell = document.createElement("td");
@@ -113,28 +153,27 @@
         var pictureCell = document.createElement("td");
         if (message.picture) {
           var pictureImg = document.createElement("img");
-          pictureImg.classList.add("message-img");
           pictureImg.src = message.picture;
+          pictureImg.alt = "Picture";
+          pictureImg.classList.add("message-img");
           pictureCell.appendChild(pictureImg);
         }
         row.appendChild(pictureCell);
 
         var actionCell = document.createElement("td");
-        var editLink = document.createElement("a");
-        editLink.href = "#";
-        editLink.textContent = "Edit";
-        editLink.addEventListener("click", function(event) {
-          event.preventDefault();
+        var editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", function() {
           editMessage(index);
         });
-        actionCell.appendChild(editLink);
+        actionCell.appendChild(editButton);
         row.appendChild(actionCell);
 
         tableBody.appendChild(row);
       });
     }
 
-    // Function to add a new message
+    // Function to add a message
     function addMessage(name, message, replyAuthor, replyMessage, picture) {
       var newMessage = {
         name: name,
@@ -150,10 +189,9 @@
       displayMessages(allMessages);
     }
 
-    // Function to edit an existing message
+    // Function to edit a message
     function editMessage(index) {
       var message = allMessages[index];
-      if (!message) return;
 
       var nameInput = document.getElementById("nameInput");
       var messageInput = document.getElementById("messageInput");
@@ -168,42 +206,51 @@
       pictureInput.value = message.picture;
 
       var messageForm = document.getElementById("messageForm");
+      messageForm.removeEventListener("submit", handleSubmit);
       messageForm.addEventListener("submit", function(event) {
         event.preventDefault();
-
-        var updatedName = nameInput.value.trim();
-        var updatedMessage = messageInput.value.trim();
-        var updatedReplyAuthor = replyAuthorInput.value.trim();
-        var updatedReplyMessage = replyMessageInput.value.trim();
-        var updatedPicture = pictureInput.value.trim();
-
-        if (updatedName === "" || updatedMessage === "") {
-          alert("Please enter your name and message.");
-          return;
-        }
-
-        message.name = updatedName;
-        message.message = updatedMessage;
-        message.replyAuthor = updatedReplyAuthor;
-        message.replyMessage = updatedReplyMessage;
-        message.picture = updatedPicture;
-        message.timestamp = Date.now();
-
-        localStorage.setItem("messages", JSON.stringify(allMessages));
-        displayMessages(allMessages);
-
-        nameInput.value = "";
-        messageInput.value = "";
-        replyAuthorInput.value = "";
-        replyMessageInput.value = "";
-        pictureInput.value = "";
-        messageForm.removeEventListener("submit", arguments.callee);
+        updateMessage(index);
       });
     }
 
-    // Event listener for the form submission
-    var messageForm = document.getElementById("messageForm");
-    messageForm.addEventListener("submit", function(event) {
+    // Function to update a message
+    function updateMessage(index) {
+      var nameInput = document.getElementById("nameInput");
+      var messageInput = document.getElementById("messageInput");
+      var replyAuthorInput = document.getElementById("replyAuthorInput");
+      var replyMessageInput = document.getElementById("replyMessageInput");
+      var pictureInput = document.getElementById("pictureInput");
+
+      var updatedMessage = {
+        name: nameInput.value.trim(),
+        message: messageInput.value.trim(),
+        replyAuthor: replyAuthorInput.value.trim(),
+        replyMessage: replyMessageInput.value.trim(),
+        picture: pictureInput.value.trim(),
+        timestamp: Date.now()
+      };
+
+      allMessages[index] = updatedMessage;
+      localStorage.setItem("messages", JSON.stringify(allMessages));
+      displayMessages(allMessages);
+
+      var messageForm = document.getElementById("messageForm");
+      messageForm.reset();
+      messageForm.removeEventListener("submit", updateMessage);
+      messageForm.addEventListener("submit", handleSubmit);
+    }
+
+    // Function to filter messages by name
+    function filterMessages(name) {
+      var filteredMessages = allMessages.filter(function(message) {
+        return message.name.toLowerCase().includes(name.toLowerCase());
+      });
+
+      displayMessages(filteredMessages);
+    }
+
+    // Function to handle form submission
+    function handleSubmit(event) {
       event.preventDefault();
 
       var nameInput = document.getElementById("nameInput");
@@ -212,47 +259,25 @@
       var replyMessageInput = document.getElementById("replyMessageInput");
       var pictureInput = document.getElementById("pictureInput");
 
-      var name = nameInput.value.trim();
-      var message = messageInput.value.trim();
-      var replyAuthor = replyAuthorInput.value.trim();
-      var replyMessage = replyMessageInput.value.trim();
-      var picture = pictureInput.value.trim();
+      addMessage(
+        nameInput.value.trim(),
+        messageInput.value.trim(),
+        replyAuthorInput.value.trim(),
+        replyMessageInput.value.trim(),
+        pictureInput.value.trim()
+      );
 
-      if (name === "" || message === "") {
-        alert("Please enter your name and message.");
-        return;
-      }
+      var messageForm = document.getElementById("messageForm");
+      messageForm.reset();
+    }
 
-      addMessage(name, message, replyAuthor, replyMessage, picture);
-
-      nameInput.value = "";
-      messageInput.value = "";
-      replyAuthorInput.value = "";
-      replyMessageInput.value = "";
-      pictureInput.value = "";
-    });
-
-    // Event listener for the filter button
-    var filterButton = document.getElementById("filterButton");
-    filterButton.addEventListener("click", function() {
-      var nameFilterInput = document.getElementById("nameFilterInput");
-      var nameFilter = nameFilterInput.value.trim().toLowerCase();
-
-      var filteredMessages = allMessages.filter(function(message) {
-        return message.name.toLowerCase().includes(nameFilter);
-      });
-
-      displayMessages(filteredMessages);
-    });
-
-    // Event listener for the download button
-    var downloadButton = document.getElementById("downloadButton");
-    downloadButton.addEventListener("click", function() {
+    // Function to download messages as CSV
+    function downloadMessagesCSV() {
       var csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "Name,Date,Time,Message,Reply Author,Reply Message,Picture\n";
+      csvContent += "Name,Date,Time,Message,Reply Author,Reply Message,Picture\r\n";
 
       allMessages.forEach(function(message) {
-        csvContent += [
+        var row = [
           message.name,
           new Date(message.timestamp).toLocaleDateString(),
           new Date(message.timestamp).toLocaleTimeString(),
@@ -260,19 +285,48 @@
           message.replyAuthor,
           message.replyMessage,
           message.picture
-        ].join(",") + "\n";
+        ];
+        csvContent += row.join(",") + "\r\n";
       });
 
-      var encodedUri = encodeURI(csvContent);
+      var encodedURI = encodeURI(csvContent);
       var link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
+      link.setAttribute("href", encodedURI);
       link.setAttribute("download", "messages.csv");
       document.body.appendChild(link);
       link.click();
-    });
+    }
 
-    // Display all messages initially
-    displayMessages(allMessages);
+    // Function to initialize the message board
+    function initializeMessageBoard() {
+      var storedMessages = localStorage.getItem("messages");
+
+      if (storedMessages) {
+        allMessages = JSON.parse(storedMessages);
+      }
+
+      displayMessages(allMessages);
+
+      var messageForm = document.getElementById("messageForm");
+      messageForm.addEventListener("submit", handleSubmit);
+
+      var filterButton = document.getElementById("filterButton");
+      filterButton.addEventListener("click", function() {
+        var nameFilterInput = document.getElementById("nameFilterInput");
+        filterMessages(nameFilterInput.value.trim());
+      });
+
+      var refreshButton = document.getElementById("refreshButton");
+      refreshButton.addEventListener("click", function() {
+        displayMessages(allMessages);
+      });
+
+      var downloadButton = document.getElementById("downloadButton");
+      downloadButton.addEventListener("click", downloadMessagesCSV);
+    }
+
+    // Initialize the message board when the page loads
+    window.onload = initializeMessageBoard;
   </script>
 </body>
 </html>
