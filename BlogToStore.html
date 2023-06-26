@@ -20,8 +20,12 @@
     <input type="text" id="nameInput"><br><br>
     <label for="messageInput">Enter your message</label><br>
     <textarea id="messageInput"></textarea><br><br>
+    <label for="replyAuthorInput">Reply Author</label><br>
+    <input type="text" id="replyAuthorInput"><br><br>
+    <label for="replyMessageInput">Reply Message</label><br>
+    <textarea id="replyMessageInput"></textarea><br><br>
     <label for="customDateTimeInput">Custom Date and Time (Optional):</label><br>
-    <input type="text" id="customDateTimeInput" placeholder="dd/mm/yyyy --:--"><br><br>
+    <input type="datetime-local" id="customDateTimeInput"><br><br>
     <button type="submit">Post</button>
   </form>
 
@@ -35,13 +39,19 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Date and Time</th>
+        <th>Date</th>
+        <th>Time</th>
         <th>Message</th>
+        <th>Reply Author</th>
+        <th>Reply Message</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="messageBody">
     </tbody>
   </table>
+
+  <button type="button" id="downloadButton">Download as CSV</button>
 
   <script>
     var allMessages = [];
@@ -51,22 +61,64 @@
       var tableBody = document.getElementById("messageBody");
       tableBody.innerHTML = "";
 
-      messages.forEach(function(message) {
-        var row = document.createElement("tr");
-        var nameCell = document.createElement("td");
-        nameCell.textContent = message.name;
-        row.appendChild(nameCell);
+      if (messages && messages.length > 0) {
+        messages.forEach(function(message, index) {
+          var row = document.createElement("tr");
 
-        var timestampCell = document.createElement("td");
-        timestampCell.textContent = message.timestamp;
-        row.appendChild(timestampCell);
+          var nameCell = document.createElement("td");
+          var nameInput = document.createElement("input");
+          nameInput.type = "text";
+          nameInput.value = message.name;
+          nameCell.appendChild(nameInput);
+          row.appendChild(nameCell);
 
-        var messageCell = document.createElement("td");
-        messageCell.textContent = message.message;
-        row.appendChild(messageCell);
+          var timestampCell = document.createElement("td");
+          var timestamp = new Date(message.timestamp);
+          timestampCell.textContent = timestamp.toLocaleDateString();
+          row.appendChild(timestampCell);
 
-        tableBody.appendChild(row);
-      });
+          var timeCell = document.createElement("td");
+          var time = timestamp.toLocaleTimeString();
+          timeCell.textContent = time;
+          row.appendChild(timeCell);
+
+          var messageCell = document.createElement("td");
+          var messageInput = document.createElement("input");
+          messageInput.type = "text";
+          messageInput.value = message.message;
+          messageCell.appendChild(messageInput);
+          row.appendChild(messageCell);
+
+          var replyAuthorCell = document.createElement("td");
+          var replyAuthorInput = document.createElement("input");
+          replyAuthorInput.type = "text";
+          replyAuthorInput.value = message.replyAuthor || "";
+          replyAuthorCell.appendChild(replyAuthorInput);
+          row.appendChild(replyAuthorCell);
+
+          var replyMessageCell = document.createElement("td");
+          var replyMessageInput = document.createElement("input");
+          replyMessageInput.type = "text";
+          replyMessageInput.value = message.replyMessage || "";
+          replyMessageCell.appendChild(replyMessageInput);
+          row.appendChild(replyMessageCell);
+
+          var actionCell = document.createElement("td");
+          var editButton = document.createElement("button");
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", function() {
+            var newName = nameInput.value;
+            var newMessage = messageInput.value;
+            var newReplyAuthor = replyAuthorInput.value;
+            var newReplyMessage = replyMessageInput.value;
+            editMessage(index, newName, newMessage, newReplyAuthor, newReplyMessage);
+          });
+          actionCell.appendChild(editButton);
+          row.appendChild(actionCell);
+
+          tableBody.appendChild(row);
+        });
+      }
     }
 
     // Function to save messages to local storage
@@ -79,61 +131,131 @@
       var savedMessages = localStorage.getItem("messages");
       if (savedMessages) {
         allMessages = JSON.parse(savedMessages);
+
+        // Sort messages by timestamp in ascending order (oldest to youngest)
+        allMessages.sort(function(a, b) {
+          return new Date(a.timestamp) - new Date(b.timestamp);
+        });
+
         displayMessages(allMessages);
+      }
+    }
+
+    // Function to add a new message
+    function addMessage(name, message, replyAuthor, replyMessage) {
+      var customDateTimeInput = document.getElementById("customDateTimeInput");
+      var timestamp = new Date().toISOString();
+      
+      if (customDateTimeInput.value) {
+        var customTimestamp = new Date(customDateTimeInput.value).getTime();
+        
+        if (!isNaN(customTimestamp) && customTimestamp >= Date.now() && customTimestamp <= new Date(2023, 5, 20).getTime()) {
+          timestamp = new Date(customTimestamp).toISOString();
+        } else {
+          timestamp = generateRandomTimestamp().toISOString();
+        }
+      }
+      
+      var newMessage = {
+        name: name,
+        timestamp: timestamp,
+        message: message,
+        replyAuthor: replyAuthor || "",
+        replyMessage: replyMessage || ""
+      };
+
+      allMessages.push(newMessage);
+      displayMessages(allMessages);
+      saveMessages();
+    }
+
+    // Function to generate a random timestamp within the range of today and June 20th, 2023
+    function generateRandomTimestamp() {
+      var today = new Date();
+      var june20th2023 = new Date(2023, 5, 20);
+      var randomTimestamp = new Date(today.getTime() + Math.random() * (june20th2023.getTime() - today.getTime()));
+      return randomTimestamp;
+    }
+
+    // Function to edit an existing message
+    function editMessage(index, newName, newMessage, newReplyAuthor, newReplyMessage) {
+      if (index >= 0 && index < allMessages.length) {
+        allMessages[index].name = newName;
+        allMessages[index].message = newMessage;
+        allMessages[index].replyAuthor = newReplyAuthor;
+        allMessages[index].replyMessage = newReplyMessage;
+        displayMessages(allMessages);
+        saveMessages();
       }
     }
 
     // Function to handle form submission
     document.getElementById("messageForm").addEventListener("submit", function(event) {
       event.preventDefault();
+      var nameInput = document.getElementById("nameInput");
+      var messageInput = document.getElementById("messageInput");
+      var replyAuthorInput = document.getElementById("replyAuthorInput");
+      var replyMessageInput = document.getElementById("replyMessageInput");
 
-      var name = trimString(document.getElementById("nameInput").value);
-      var message = document.getElementById("messageInput").value;
-      var customDateTime = document.getElementById("customDateTimeInput").value.trim();
+      var name = nameInput.value;
+      var message = messageInput.value;
+      var replyAuthor = replyAuthorInput.value;
+      var replyMessage = replyMessageInput.value;
 
-      var timestamp;
-      if (customDateTime) {
-        var dateTimeParts = customDateTime.split(" ");
-        var dateParts = dateTimeParts[0].split("/");
-        var timeParts = dateTimeParts[1].split(":");
-        timestamp = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]).toLocaleString();
+      if (name && message) {
+        addMessage(name, message, replyAuthor, replyMessage);
+        nameInput.value = "";
+        messageInput.value = "";
+        replyAuthorInput.value = "";
+        replyMessageInput.value = "";
       } else {
-        timestamp = new Date().toLocaleString();
+        alert("Please enter your name and message.");
       }
-
-      var newMessage = {
-        name: name,
-        timestamp: timestamp,
-        message: message
-      };
-
-      allMessages.push(newMessage);
-      displayMessages(allMessages);
-      saveMessages();
-
-      document.getElementById("nameInput").value = "";
-      document.getElementById("messageInput").value = "";
-      document.getElementById("customDateTimeInput").value = "";
     });
 
-    // Function to handle filter button click
+    // Function to filter messages by name
     document.getElementById("filterButton").addEventListener("click", function() {
-      var nameFilterValue = trimString(document.getElementById("nameFilterInput").value).toLowerCase();
+      var nameFilterInput = document.getElementById("nameFilterInput");
+      var filterValue = nameFilterInput.value.trim().toLowerCase();
+      var filteredMessages = [];
 
-      var filteredMessages = allMessages.filter(function(message) {
-        var name = trimString(message.name).toLowerCase();
-        return name.includes(nameFilterValue);
-      });
+      if (filterValue) {
+        filteredMessages = allMessages.filter(function(message) {
+          return message.name.toLowerCase().includes(filterValue);
+        });
+      } else {
+        filteredMessages = allMessages;
+      }
 
       displayMessages(filteredMessages);
     });
 
-    // Function to remove leading and trailing whitespace
-    function trimString(str) {
-      return str.replace(/^\s+|\s+$/g, "");
-    }
+    // Function to download messages as CSV
+    document.getElementById("downloadButton").addEventListener("click", function() {
+      var csvContent = "data:text/csv;charset=utf-8,";
 
-    // Load messages from local storage on page load
+      if (allMessages.length > 0) {
+        var headers = Object.keys(allMessages[0]);
+        csvContent += headers.join(",") + "\n";
+
+        allMessages.forEach(function(message) {
+          var values = Object.values(message);
+          var row = values.map(function(value) {
+            return typeof value === "string" ? `"${value}"` : value;
+          });
+          csvContent += row.join(",") + "\n";
+        });
+      }
+
+      var encodedUri = encodeURI(csvContent);
+      var link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "messages.csv");
+      document.body.appendChild(link);
+      link.click();
+    });
+
+    // Load messages on page load
     loadMessages();
   </script>
 </body>
