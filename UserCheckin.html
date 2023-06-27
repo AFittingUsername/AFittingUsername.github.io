@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Review Page</title>
+  <style>
+    #reviews {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="header">Review Page</h1>
+
+  <label for="language">Select Language:</label>
+  <select id="language" onchange="translatePage()">
+    <option value="en">English</option>
+    <option value="es">Spanish</option>
+    <option value="fr">French</option>
+    <!-- Add more language options as needed -->
+  </select>
+
+  <form id="reviewForm">
+    <label for="name" id="nameLabel">Name:</label>
+    <input type="text" id="name" required>
+
+    <label for="email" id="emailLabel">Email:</label>
+    <input type="email" id="email" required>
+
+    <label for="rating" id="ratingLabel">Rating:</label>
+    <select id="rating" required>
+      <option value="5">5 Stars</option>
+      <option value="4">4 Stars</option>
+      <option value="3">3 Stars</option>
+      <option value="2">2 Stars</option>
+      <option value="1">1 Star</option>
+    </select>
+
+    <label for="comments" id="commentsLabel">Comments:</label>
+    <textarea id="comments" required></textarea>
+
+    <button type="submit" id="submitBtn">Submit</button>
+  </form>
+
+  <h2 id="reviewsTitle">Reviews</h2>
+  <div id="reviews"></div>
+
+  <button id="downloadButton">Download as CSV</button>
+
+  <script>
+    // Function to store a new review in local storage
+    function storeReview(review) {
+      let reviews = localStorage.getItem('reviews');
+      if (!reviews) {
+        reviews = [];
+      } else {
+        reviews = JSON.parse(reviews);
+      }
+
+      reviews.unshift(review);
+      localStorage.setItem('reviews', JSON.stringify(reviews));
+    }
+
+    // Function to display the reviews on the page
+    function displayReviews() {
+      let reviews = localStorage.getItem('reviews');
+      if (reviews) {
+        reviews = JSON.parse(reviews);
+        let reviewsDiv = document.getElementById('reviews');
+        reviewsDiv.innerHTML = '';
+
+        for (let i = 0; i < reviews.length; i++) {
+          let review = reviews[i];
+          let reviewElement = document.createElement('div');
+          reviewElement.innerHTML = `
+            <h3>${review.name}</h3>
+            <p>Email: ${review.email}</p>
+            <p>Rating: ${review.rating} Stars</p>
+            <p>Comments: ${review.comments}</p>
+            <hr>
+          `;
+          reviewsDiv.appendChild(reviewElement);
+        }
+      }
+    }
+
+    // Function to download the reviews as a CSV file
+    function downloadReviews() {
+      let reviews = localStorage.getItem('reviews');
+      if (reviews) {
+        reviews = JSON.parse(reviews);
+        let csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += 'Name,Email,Rating,Comments\n';
+
+        for (let i = 0; i < reviews.length; i++) {
+          let review = reviews[i];
+          let row = `${review.name},${review.email},${review.rating},"${review.comments.replace(/"/g, '""')}`+"\n";
+          csvContent += row;
+        }
+
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'reviews.csv');
+        document.body.appendChild(link);
+        link.click();
+      }
+    }
+
+    // Function to translate the page based on the selected language
+    function translatePage() {
+      let selectedLanguage = document.getElementById('language').value;
+
+      let targetElements = [
+        { id: 'nameLabel', translationKey: 'nameLabel' },
+        { id: 'emailLabel', translationKey: 'emailLabel' },
+        { id: 'ratingLabel', translationKey: 'ratingLabel' },
+        { id: 'commentsLabel', translationKey: 'commentsLabel' },
+        { id: 'submitBtn', translationKey: 'submitLabel' },
+        { id: 'downloadButton', translationKey: 'downloadButtonLabel' },
+        { id: 'header', translationKey: 'header' },
+        { id: 'reviewsTitle', translationKey: 'reviewsTitle' },
+      ];
+
+      let translations = {
+        en: {
+          nameLabel: 'Name:',
+          emailLabel: 'Email:',
+          ratingLabel: 'Rating:',
+          commentsLabel: 'Comments:',
+          submitLabel: 'Submit',
+          downloadButtonLabel: 'Download as CSV',
+          header: 'Review Page',
+          reviewsTitle: 'Reviews',
+        },
+        es: {
+          nameLabel: 'Nombre:',
+          emailLabel: 'Correo electrónico:',
+          ratingLabel: 'Valoración:',
+          commentsLabel: 'Comentarios:',
+          submitLabel: 'Enviar',
+          downloadButtonLabel: 'Descargar como CSV',
+          header: 'Página de reseñas',
+          reviewsTitle: 'Reseñas',
+        },
+        fr: {
+          nameLabel: 'Nom:',
+          emailLabel: 'Email:',
+          ratingLabel: 'Évaluation:',
+          commentsLabel: 'Commentaires:',
+          submitLabel: 'Soumettre',
+          downloadButtonLabel: 'Télécharger en CSV',
+          header: 'Page des avis',
+          reviewsTitle: 'Avis',
+        },
+        // Add more translations as needed
+      };
+
+      let translateElements = translations[selectedLanguage];
+
+      targetElements.forEach(function (element) {
+        let targetElement = document.getElementById(element.id);
+        if (targetElement && translateElements[element.translationKey]) {
+          targetElement.textContent = translateElements[element.translationKey];
+        }
+      });
+
+      displayReviews();
+    }
+
+    // Event listener for form submission
+    document.getElementById('reviewForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      let name = document.getElementById('name').value;
+      let email = document.getElementById('email').value;
+      let rating = document.getElementById('rating').value;
+      let comments = document.getElementById('comments').value;
+
+      if (name && email && rating && comments) {
+        let review = {
+          name: name,
+          email: email,
+          rating: rating,
+          comments: comments
+        };
+
+        storeReview(review);
+        displayReviews();
+        document.getElementById('reviewForm').reset();
+      }
+    });
+
+    // Event listener for download button
+    document.getElementById('downloadButton').addEventListener('click', downloadReviews);
+
+    // Retrieve and set the selected language from local storage
+    let selectedLanguage = localStorage.getItem('selectedLanguage');
+    if (selectedLanguage) {
+      document.getElementById('language').value = selectedLanguage;
+    }
+
+    // Display the reviews on page load
+    displayReviews();
+  </script>
+</body>
+</html>
